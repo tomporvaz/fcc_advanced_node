@@ -27,6 +27,24 @@ app.use(session({
   saveUninitialized: true
 }));
 
+//IN THIS SECTION PASSPORT SERIALIZATION AND DESERIALIZATION HAPPENS
+
+const ObjectID = require('mongodb').ObjectID;
+
+passport.serializeUser((user, done) => {
+  done(null, user._id);
+});
+
+passport.deserializeUser((id, done) => {
+  done(null, null);
+  /*db.collection('users').findOne(
+    {_id: new ObjectID(id)},
+    (err, doc) => {
+      done(null, doc);
+    }
+  )*/
+});
+
 
 
 app.listen(process.env.PORT || 3000, () => {
