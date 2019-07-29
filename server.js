@@ -5,6 +5,8 @@ const bodyParser  = require('body-parser');
 const fccTesting  = require('./freeCodeCamp/fcctesting.js');
 const session = require("express-session");
 const passport = require("passport");
+const ObjectID = require('mongodb').ObjectID;
+const mongo = require('mongodb').MongoClient;
 
 const app = express();
 
@@ -28,22 +30,27 @@ app.use(session({
 }));
 
 //IN THIS SECTION PASSPORT SERIALIZATION AND DESERIALIZATION HAPPENS
+mongo.connect(process.env.DATAPASE, (err, db) => {
+  if(err){
+    console.error({'Database error: ' + err});
+  } else {
+    console.log('Sucessful connection to DB');
+    passport.serializeUser((user, done) => {
+      done(null, user._id);
+    });
+    
+    passport.deserializeUser((id, done) => {
+     db.collection('users').findOne(
+        {_id: new ObjectID(id)},
+        (err, doc) => {
+          done(null, doc);
+        }
+        )
+      });
 
-const ObjectID = require('mongodb').ObjectID;
+  }
+})
 
-passport.serializeUser((user, done) => {
-  done(null, user._id);
-});
-
-passport.deserializeUser((id, done) => {
-  done(null, null);
-  /*db.collection('users').findOne(
-    {_id: new ObjectID(id)},
-    (err, doc) => {
-      done(null, doc);
-    }
-  )*/
-});
 
 
 
