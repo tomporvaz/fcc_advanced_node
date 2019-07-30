@@ -21,7 +21,12 @@ app.use(passport.session());
 
 app.route('/')
   .get((req, res) => {
-    res.render(process.cwd() + '/views/pug/index.pug', {title: 'Hello', message: 'Please login'});
+    res.render(process.cwd() + '/views/pug/index.pug', 
+    {
+      title: 'Hello', 
+      message: 'Please login',
+      showLogin: true
+    });
   });
 
 app.use(session({
@@ -29,6 +34,14 @@ app.use(session({
   resave: true,
   saveUninitialized: true
 }));
+
+//login route
+const authenticate = passport.authenticate('local', {failureRedirect: '/'});
+
+app.post('/login', authenticate, function(req, res) {
+  res.render(process.cws() + 'views/pug/profile.pug');
+}
+)
 
 //IN THIS SECTION PASSPORT SERIALIZATION AND DESERIALIZATION HAPPENS
 mongo.connect(process.env.DATABASE, (err, db) => {
