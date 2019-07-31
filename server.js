@@ -68,12 +68,15 @@ app.route('/logout')
   res.redirect('/');
 });
 
-//404 middleware
-app.use((req, res, next) => {
-  res.status(404)
-  .type('text')
-  .send('not found')
+/*
+//regisration route
+app.route('/route')
+.post((req, res) => {
+
 })
+*/
+
+
 
 //IN THIS SECTION PASSPORT SERIALIZATION AND DESERIALIZATION HAPPENS
 mongo.connect(process.env.DATABASE, (err, db) => {
@@ -123,3 +126,12 @@ mongo.connect(process.env.DATABASE, (err, db) => {
 app.listen(process.env.PORT || 3000, () => {
   console.log("Listening on port " + process.env.PORT);
 });
+
+
+//ALL ROUTES ABOVE HERE
+//404 middleware
+app.use((req, res, next) => {
+  res.status(404)
+  .type('text')
+  .send('not found')
+})
