@@ -52,9 +52,9 @@ function ensureAuthenticated(req, res, next) {
 };
 
 app.route('/profile')
-.get(ensureAuthenticated), (req, res) => {
+.get(ensureAuthenticated, (req, res) => {
   res.render(process.cwd() + 'views/pug/profile.pug');
-}
+});
 
 //IN THIS SECTION PASSPORT SERIALIZATION AND DESERIALIZATION HAPPENS
 mongo.connect(process.env.DATABASE, (err, db) => {
