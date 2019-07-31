@@ -59,6 +59,21 @@ app.route('/profile')
   });
 });
 
+
+//logout route
+app.route('/logout')
+.get((res, req) => {
+  req.logout();
+  res.redirect('/');
+});
+
+//404 middleware
+app.use((req, res, next) => {
+  res.status(404)
+  .type('text')
+  .send('not found')
+})
+
 //IN THIS SECTION PASSPORT SERIALIZATION AND DESERIALIZATION HAPPENS
 mongo.connect(process.env.DATABASE, (err, db) => {
   if(err){
