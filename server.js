@@ -25,7 +25,8 @@ app.route('/')
     {
       title: 'Hello', 
       message: 'Please login',
-      showLogin: true
+      showLogin: true,
+      showRegistration: true
     });
   });
 
