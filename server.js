@@ -53,7 +53,10 @@ function ensureAuthenticated(req, res, next) {
 
 app.route('/profile')
 .get(ensureAuthenticated, (req, res) => {
-  res.render(process.cwd() + 'views/pug/profile.pug');
+  res.render(process.cwd() + 'views/pug/profile.pug',
+  {
+    username: req.user.username
+  });
 });
 
 //IN THIS SECTION PASSPORT SERIALIZATION AND DESERIALIZATION HAPPENS
