@@ -62,7 +62,7 @@ app.route('/profile')
 
 //logout route
 app.route('/logout')
-.get((res, req) => {
+.get((req, res) => {
   req.logout();
   res.redirect('/');
 });
