@@ -69,124 +69,99 @@ app.route('/logout')
 });
 
 
-//regisration route
-app.route('/route')
-.post((req, res, next) => {
-  db.collection('users').findOne({username: req.body.username}, function(err, user){
-    if(err) {
-      next(err);
-    } else if(user){
-      res.redirect('/');
-    } else {
-      db.collection('users').insertOne(
-        {
-          username: req.body.username,
-          password: req.body.password
-        },
-        (err, doc) => {
+
+
+
+
+//IN THIS SECTION PASSPORT SERIALIZATION AND DESERIALIZATION HAPPENS
+mongo.connect(process.env.DATABASE, (err, db) => {
+  if(err){
+    console.error('Database error: ' + err);
+  } else {
+    console.log('Sucessful connection to DB');
+    
+    passport.use(new LocalStrategy(
+      function(username, password, done) {
+        db.collection('users').findOne({username: username}, function(err, user) {
+          console.log(`User ${username} attempted to log in.`);
+          if (err) {
+            return done (err);
+          }
+          if(!user){
+            return done(null, false);
+          }
+          if(password !== user.password) {
+            return done(null, false);
+          }
+          return done (null, user);
+        })
+      }
+      ));
+      
+      
+      passport.serializeUser((user, done) => {
+        done(null, user._id);
+      });
+      
+      passport.deserializeUser((id, done) => {
+        db.collection('users').findOne(
+          {_id: new ObjectID(id)},
+          (err, doc) => {
+            done(null, doc);
+          }
+          )
+        });
+        
+      }
+      
+      //regisration route
+      app.route('/register')
+      .post((req, res, next) => {
+        db.collection('users').findOne({username: req.body.username}, function(err, user){
           if(err) {
+            console.error({'registration error': err})
+            next(err);
+          } else if(user){
+            console.error({'user exists error': err})
             res.redirect('/');
           } else {
-            next(null, user);
-          }
-        }
-        )
-      }
-    })
-  }),
-  passport.authenticate('local', {failureRedirect: '/'},
-  (req, res, next) => {
-    res.redirect('/profile');
-  });
-  
-  
-  
-  
-  //IN THIS SECTION PASSPORT SERIALIZATION AND DESERIALIZATION HAPPENS
-  mongo.connect(process.env.DATABASE, (err, db) => {
-    if(err){
-      console.error('Database error: ' + err);
-    } else {
-      console.log('Sucessful connection to DB');
-      
-      passport.use(new LocalStrategy(
-        function(username, password, done) {
-          db.collection('users').findOne({username: username}, function(err, user) {
-            console.log(`User ${username} attempted to log in.`);
-            if (err) {
-              return done (err);
-            }
-            if(!user){
-              return done(null, false);
-            }
-            if(password !== user.password) {
-              return done(null, false);
-            }
-            return done (null, user);
-          })
-        }
-        ));
-        
-        
-        passport.serializeUser((user, done) => {
-          done(null, user._id);
-        });
-        
-        passport.deserializeUser((id, done) => {
-          db.collection('users').findOne(
-            {_id: new ObjectID(id)},
-            (err, doc) => {
-              done(null, doc);
-            }
-            )
-          });
-          
-        }
-        
-        //regisration route
-        app.route('/route')
-        .post((req, res, next) => {
-          db.collection('users').findOne({username: req.body.username}, function(err, user){
-            if(err) {
-              next(err);
-            } else if(user){
-              res.redirect('/');
-            } else {
-              db.collection('users').insertOne(
-                {
-                  username: req.body.username,
-                  password: req.body.password
-                },
-                (err, doc) => {
-                  if(err) {
-                    res.redirect('/');
-                  } else {
-                    next(null, user);
-                  }
+            console.log("Sucess, unused username found!")
+            db.collection('users').insertOne(
+              {
+                username: req.body.username,
+                password: req.body.password
+              },
+              (err, doc) => {
+                console.log(doc);
+                if(err) {
+                  res.redirect('/');
+                } else {
+                  next(null, user);
                 }
-                )
               }
-            })
-          }),
-          passport.authenticate('local', {failureRedirect: '/'},
-          (req, res, next) => {
-            res.redirect('/profile');
-          });
-          
+              )
+            }
+          })
+        },
+        passport.authenticate('local', {failureRedirect: '/'}),
+        (req, res, next) => {
+          res.redirect('/profile');
         });
         
-        
-        
-        
-        app.listen(process.env.PORT || 3000, () => {
-          console.log("Listening on port " + process.env.PORT);
-        });
-        
-        
-        //ALL ROUTES ABOVE HERE
-        //404 middleware
-        app.use((req, res, next) => {
-          res.status(404)
-          .type('text')
-          .send('not found')
-        })
+      });
+      
+      
+      
+      
+      app.listen(process.env.PORT || 3000, () => {
+        console.log("Listening on port " + process.env.PORT);
+      });
+      
+      
+      //ALL ROUTES ABOVE HERE
+      //404 middleware
+      app.use((req, res, next) => {
+        res.status(404)
+        .type('text')
+        .send('not found')
+      })
