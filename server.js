@@ -18,59 +18,11 @@ app.set('view engine', 'pug')
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-app.route('/')
-.get((req, res) => {
-  res.render(process.cwd() + '/views/pug/index.pug', 
-  {
-    title: 'Hello', 
-    message: 'Please login',
-    showLogin: true,
-    showRegistration: true
-  });
-});
-
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: true,
   saveUninitialized: true
 }));
-
-//login route
-const authenticate = passport.authenticate('local', {failureRedirect: '/'});
-
-app.post('/login', authenticate, function(req, res) {
-  res.redirect('/profile')
-}
-)
-
-//ensureAuthenticated middleware checks that user is authenticated so routes are not exposed
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.redirect('/');
-};
-
-app.route('/profile')
-.get(ensureAuthenticated, (req, res) => {
-  res.render(process.cwd() + '/views/pug/profile.pug',
-  {
-    username: req.user.username
-  });
-});
-
-
-//logout route
-app.route('/logout')
-.get((req, res) => {
-  req.logout();
-  res.redirect('/');
-});
-
-
-
-
 
 
 //IN THIS SECTION PASSPORT SERIALIZATION AND DESERIALIZATION HAPPENS
@@ -111,8 +63,51 @@ mongo.connect(process.env.DATABASE, (err, db) => {
           }
           )
         });
+
+        app.route('/')
+        .get((req, res) => {
+          res.render(process.cwd() + '/views/pug/index.pug', 
+          {
+            title: 'Hello', 
+            message: 'Please login',
+            showLogin: true,
+            showRegistration: true
+          });
+        });
         
-      }
+        
+        
+        //login route
+        const authenticate = passport.authenticate('local', {failureRedirect: '/'});
+        
+        app.post('/login', authenticate, function(req, res) {
+          res.redirect('/profile')
+        }
+        )
+        
+        //ensureAuthenticated middleware checks that user is authenticated so routes are not exposed
+        function ensureAuthenticated(req, res, next) {
+          if (req.isAuthenticated()) {
+            return next();
+          }
+          res.redirect('/');
+        };
+        
+        app.route('/profile')
+        .get(ensureAuthenticated, (req, res) => {
+          res.render(process.cwd() + '/views/pug/profile.pug',
+          {
+            username: req.user.username
+          });
+        });
+        
+        
+        //logout route
+        app.route('/logout')
+        .get((req, res) => {
+          req.logout();
+          res.redirect('/');
+        });
       
       //regisration route
       app.route('/register')
@@ -147,21 +142,28 @@ mongo.connect(process.env.DATABASE, (err, db) => {
         (req, res, next) => {
           res.redirect('/profile');
         });
+
+              //ALL ROUTES ABOVE HERE
+      //404 middleware
+      app.use((req, res, next) => {
+        res.status(404)
+        .type('text')
+        .send('not found')
+      })  
+      
+      app.listen(process.env.PORT || 3000, () => {
+        console.log("Listening on port " + process.env.PORT);
+      });
+        
+      }
+      
+
         
       });
       
       
       
       
-      app.listen(process.env.PORT || 3000, () => {
-        console.log("Listening on port " + process.env.PORT);
-      });
+    
       
       
-      //ALL ROUTES ABOVE HERE
-      //404 middleware
-      app.use((req, res, next) => {
-        res.status(404)
-        .type('text')
-        .send('not found')
-      })
