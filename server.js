@@ -37,12 +37,15 @@ mongo.connect(process.env.DATABASE, (err, db) => {
         db.collection('users').findOne({username: username}, function(err, user) {
           console.log(`User ${username} attempted to log in.`);
           if (err) {
+            console.error({'Auth failure': err})
             return done (err);
           }
           if(!user){
+            console.error({'User auth failed': username})
             return done(null, false);
           }
           if(password !== user.password) {
+            console.log("Successful Auth!");
             return done(null, false);
           }
           return done (null, user);
@@ -89,8 +92,10 @@ mongo.connect(process.env.DATABASE, (err, db) => {
         function ensureAuthenticated(req, res, next) {
           if (req.isAuthenticated()) {
             return next();
-          }
-          res.redirect('/');
+          } else {
+            console.log('user is not authenticated');
+            console.log(req);
+            res.redirect('/');}
         };
         
         app.route('/profile')
