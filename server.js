@@ -84,7 +84,7 @@ mongo.connect(process.env.DATABASE, (err, db) => {
       passport.deserializeUser((id, done) => {
         db.collection('users').findOne(
           {_id: new ObjectID(id)},
-          (err, doc) => {
+          (err, user) => {
             done(null, user);
           }
           )
