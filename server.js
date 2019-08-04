@@ -9,6 +9,7 @@ const ObjectID = require('mongodb').ObjectID;
 const mongo = require('mongodb').MongoClient;
 const LocalStrategy = require('passport-local');
 const app = express();
+const bcrypt = require('bcrypt');
 
 fccTesting(app); //For FCC testing purposes
 app.use('/public', express.static(process.cwd() + '/public'));
@@ -47,6 +48,9 @@ if (process.env.ENABLE_DELAYS) app.use((req, res, next) => {
   }
 });
 
+//hash password
+let hash = bcrypt.hashSync(req.body.password, 12);
+
 
 //IN THIS SECTION PASSPORT SERIALIZATION AND DESERIALIZATION HAPPENS
 mongo.connect(process.env.DATABASE, (err, db) => {
@@ -67,7 +71,7 @@ mongo.connect(process.env.DATABASE, (err, db) => {
             console.error({'User auth failed': username})
             return done(null, false);
           }
-          if(password !== user.password) {
+          if(!bcrypt.compareSync(password, user.password)) {
             console.log("Successful Auth!");
             return done(null, false);
           }
@@ -99,7 +103,7 @@ mongo.connect(process.env.DATABASE, (err, db) => {
             showLogin: true,
             showRegistration: true
           });
-        });
+        });req.body.password
         
         
         
@@ -153,7 +157,7 @@ mongo.connect(process.env.DATABASE, (err, db) => {
             db.collection('users').insertOne(
               {
                 username: req.body.username,
-                password: req.body.password
+                password: hash
               },
               (err, doc) => {
                 console.log(doc);
