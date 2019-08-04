@@ -15,14 +15,37 @@ app.use('/public', express.static(process.cwd() + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'pug')
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: true,
   saveUninitialized: true
 }));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Enable to pass the challenge called "Advanced Node and Express - 
+// Registration of New Users"
+if (process.env.ENABLE_DELAYS) app.use((req, res, next) => {
+  switch (req.method) {
+    case 'GET':
+      switch (req.url) {
+        case '/logout': return setTimeout(() => next(), 500);
+        case '/profile': return setTimeout(() => next(), 700);
+        default: next();
+      }
+    break;
+    case 'POST':
+      switch (req.url) {
+        case '/login': return setTimeout(() => next(), 900);
+        default: next();
+      }
+    break;
+    default: next();
+  }
+});
 
 
 //IN THIS SECTION PASSPORT SERIALIZATION AND DESERIALIZATION HAPPENS
@@ -62,7 +85,7 @@ mongo.connect(process.env.DATABASE, (err, db) => {
         db.collection('users').findOne(
           {_id: new ObjectID(id)},
           (err, doc) => {
-            done(null, doc);
+            done(null, user);
           }
           )
         });
@@ -71,7 +94,7 @@ mongo.connect(process.env.DATABASE, (err, db) => {
         .get((req, res) => {
           res.render(process.cwd() + '/views/pug/index.pug', 
           {
-            title: 'Hello', 
+            title: 'Home Page', 
             message: 'Please login',
             showLogin: true,
             showRegistration: true
@@ -84,6 +107,7 @@ mongo.connect(process.env.DATABASE, (err, db) => {
         const authenticate = passport.authenticate('local', {failureRedirect: '/'});
         
         app.post('/login', authenticate, function(req, res) {
+
           res.redirect('/profile')
         }
         )
