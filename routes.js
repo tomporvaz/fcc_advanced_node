@@ -1,5 +1,5 @@
 const passport = require('passport');
-const bodyParser  = require('body-parser');
+const bcrypt = require('bcrypt');
 
 module.exports = function(app, db){
     app.route('/')
@@ -11,7 +11,7 @@ module.exports = function(app, db){
             showLogin: true,
             showRegistration: true
           });
-        });req.body.password
+        });
         
         
         
